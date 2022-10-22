@@ -24,6 +24,9 @@ myDataset.dim = dim(EauxFM) # OK si 95 12
 #######################################
 # Nettoyage du jeu de donnees
 #######################################
+EauxFM$Nature <- factor(EauxFM$Nature)
+EauxFM$Pays <- factor(EauxFM$Pays)
+
 # Jeu de données principal (Eaux de France)
 France <- subset(EauxFM, Pays == "France")
 # Jeu de données supplementaire (Eaux du Maroc)
@@ -55,11 +58,16 @@ missingDataPerVariable(myDataset.CleanFrance)
 
 
 #######################################
-# Description univariée et bivariée
+# Description univariee
+#######################################
+# Analyse univariee avec la fonction "summary" proposee par R (pas tres interessant)
+summary(myDataset.CleanFrance)
+
+#######################################
+# Description bivariee
 #######################################
 
-
 #######################################
-# Description multivariée
+# Description multivariee
 #######################################
 
