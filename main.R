@@ -1,4 +1,5 @@
 library(dplyr)
+library(GGally)
 
 #######################################
 # UTILS
@@ -62,12 +63,18 @@ missingDataPerVariable(myDataset.CleanFrance)
 #######################################
 # Analyse univariee avec la fonction "summary" proposee par R (pas tres interessant)
 summary(myDataset.CleanFrance)
-
+  
 #######################################
 # Description bivariee
 #######################################
+# Premiere analyse bivariee du dataste avec la fonction "pairs"
+pairs(myDataset.CleanFrance[,2:ncol(myDataset.CleanFrance)]) # On retire la première colonne (Nom) elle ne sert à rien ici
+
+# On fait une analyse bivariee du dataset avec "ggpairs" pour avoir plus d'informations qu'avec la fonction "pairs"
+ggpairs(myDataset.CleanFrance[,2:ncol(myDataset.CleanFrance)]) # On retire la première colonne (Nom) elle ne sert à rien ici
 
 #######################################
-# Description multivariee
+# Description multivariee (ACP)
 #######################################
+
 
