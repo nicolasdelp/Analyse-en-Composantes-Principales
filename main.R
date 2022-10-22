@@ -25,9 +25,6 @@ myDataset.dim = dim(EauxFM) # OK si 95 12
 #######################################
 # Nettoyage du jeu de donnees
 #######################################
-EauxFM$Nature <- factor(EauxFM$Nature)
-EauxFM$Pays <- factor(EauxFM$Pays)
-
 # Jeu de données principal (Eaux de France)
 France <- subset(EauxFM, Pays == "France")
 # Jeu de données supplementaire (Eaux du Maroc)
@@ -42,8 +39,8 @@ missingDataPerVariable(FranceNA)
 
 # Il faut retirer les variables NO3 et PH car il y a 30 individus ayant un NA dans ces variables en France
 
-# Jeu de données principal sans NO3 et le PH (Eaux de France)
-FranceWithoutNO3PH <- select(France,-c(NO3,PH))
+# Jeu de données principal sans le NO3, le PH et le Pays
+FranceWithoutNO3PH <- select(France,-c(NO3,PH,Pays))
 
 # On affiche le nombre d'individus ayant des données manquantes par variable
 missingDataPerVariable(FranceWithoutNO3PH)
@@ -53,6 +50,9 @@ missingDataPerVariable(FranceWithoutNO3PH)
 # On retire les derniers individus ayant des donnees manquantes
 FranceLinesWithNA <- which(is.na(FranceWithoutNO3PH),arr.ind=TRUE)[,1]
 myDataset.CleanFrance <- FranceWithoutNO3PH[-FranceLinesWithNA,]
+
+# On change la variable qualitative en variable quantitative (la Nature)
+myDataset.CleanFrance$Nature <- as.numeric(factor(myDataset.CleanFrance$Nature))
 
 # On verifie qu'il n'y a plus d'individus ayant des donnees manquantes
 missingDataPerVariable(myDataset.CleanFrance)
@@ -76,5 +76,93 @@ ggpairs(myDataset.CleanFrance[,2:ncol(myDataset.CleanFrance)]) # On retire la pr
 #######################################
 # Description multivariee (ACP)
 #######################################
+# Retourne la matrice centree-reduite XCR
+get_XCR <- function(X){
+  return(scale(X, scale=TRUE))
+}
 
+# Retourne la matrice diagonale D
+get_D <- function(X){
+  n <- nrow(X)
+  return(diag(n)/(n-1))
+}
+
+# Retourne la matrice de variances-covariances S
+get_S <- function(X){
+  XCR <- get_XCR(X)
+  return(t(XCR) %*% get_D(X) %*% XCR)
+}
+
+# Retourne les valeurs propres
+get_LambdasAndEigenVectors <- function(X){
+  eig = eigen(get_S(X))
+  
+  roundedLambdas = round(eig$values, 10)
+  roundedLambdas = roundedLambdas[roundedLambdas != 0]
+  
+  vectors = eig$vectors[,1:length(roundedLambdas)]
+  
+  return(list("lambdas" = roundedLambdas, "vectors" = vectors))
+}
+
+# Retourne la somme des lambdas
+get_SumLambdasValues <- function(X){
+  lambdas <- get_LambdasAndEigenVectors(X)$lambdas
+  return(sum(lambdas))
+}
+
+# Calcul du pourcentage d'inertie total
+get_InertiaAxes <- function(X){
+  lambdas <- get_LambdasAndEigenVectors(X)$lambdas
+  lambdaSum <- get_SumLambdasValues(X)
+  lambdaPercentage <- lambdas/lambdaSum
+  totalInertia <- 0
+  i <- 0
+  
+  while (totalInertia <= 0.8) {
+    totalInertia = totalInertia + lambdaPercentage[i+1]
+    i = i+1
+  }
+  
+  return(list("dims" = i, "totalInertia" = totalInertia*100))
+}
+
+# Calcul des composantes principales
+get_MainComponents <- function(X){
+  XCR <- get_XCR(X)
+  dims <- get_InertiaAxes(X)$dims
+  vectors <- get_LambdasAndEigenVectors(X)$vectors
+  mainComponents <- list()
+  
+  for (i in 1:dims) {
+    mainComponents[[i]] <- XCR %*% vectors[,i]
+  }
+  return(mainComponents)
+}
+
+# Affichage sous forme de graphique
+set_graph <- function(X){
+  myData <- get_MainComponents(X)
+  x <- vector()
+  y <- vector()
+  for (i in 1:length(myData[[1]])) {
+    x <- append(x, myData[[1]][i,])
+    y <- append(y, myData[[2]][i,])
+  }
+  print(x)
+  print(y)
+  plot(x,y, xlab = "F1", ylab = "F2")
+}
+
+
+
+dataSet <- myDataset.CleanFrance[,2:ncol(myDataset.CleanFrance)]
+get_XCR(dataSet)
+get_D(dataSet)
+get_S(dataSet)
+get_LambdasAndEigenVectors(dataSet)
+get_SumLambdasValues(dataSet)
+get_InertiaAxes(dataSet)
+get_MainComponents(dataSet)
+set_graph(dataSet)
 
