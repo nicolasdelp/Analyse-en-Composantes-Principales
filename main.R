@@ -1,5 +1,6 @@
 library(dplyr)
 library(GGally)
+library(plotrix)
 
 #######################################
 # UTILS
@@ -119,7 +120,7 @@ get_InertiaAxes <- function(X){
   totalInertia <- 0
   i <- 0
   
-  while (totalInertia <= 0.8) {
+  while (totalInertia <= 0.75) {
     totalInertia = totalInertia + lambdaPercentage[i+1]
     i = i+1
   }
@@ -128,7 +129,7 @@ get_InertiaAxes <- function(X){
 }
 
 # Calcul des composantes principales
-get_MainComponents <- function(X){
+get_F <- function(X){
   XCR <- get_XCR(X)
   dims <- get_InertiaAxes(X)$dims
   vectors <- get_LambdasAndEigenVectors(X)$vectors
@@ -140,9 +141,9 @@ get_MainComponents <- function(X){
   return(mainComponents)
 }
 
-# Affichage sous forme de graphique
+# Affichage sous forme de graphique selon F1 et F2
 set_graph <- function(X){
-  myData <- get_MainComponents(X)
+  myData <- get_F(X)
   x <- vector()
   y <- vector()
   for (i in 1:length(myData[[1]])) {
@@ -151,7 +152,39 @@ set_graph <- function(X){
   }
   print(x)
   print(y)
-  plot(x,y, xlab = "F1", ylab = "F2")
+  plot(x,y, xlab = "F1", ylab = "F2", xlim = c(-10, 10), ylim = c(-6, 6))
+  draw.radial.line(-10, 10, center=c(0,0))
+  draw.radial.line(-6, 6, center=c(0,0), angle=pi/2)
+}
+
+# Calcul des coordonnées sur le cercle des corrélations
+get_G <- function(X){
+  lambdas <- get_LambdasAndEigenVectors(X)$lambdas
+  vectors <- get_LambdasAndEigenVectors(X)$vectors
+  dims <- get_InertiaAxes(X)$dims
+  coorVar <- list()
+  
+  for (i in 1:dims) {
+    coorVar[[i]] <- sqrt(lambdas[i]) * vectors[,i]
+  }
+  return(coorVar)
+}
+
+# Affichage sur le cercle de corrélations des variables
+set_CorCircle <- function(X){
+  myData <- get_G(X)
+  x <- vector()
+  y <- vector()
+  for (i in 1:length(myData[[1]])) {
+    x <- append(x, myData[[1]][i])
+    y <- append(y, myData[[2]][i])
+  }
+  print(x)
+  print(y)
+  plot(x, y, xlim = c(-2, 2), ylim = c(-2, 2))
+  draw.circle(0,0,1)
+  draw.radial.line(-1, 1, center=c(0,0))
+  draw.radial.line(-1, 1, center=c(0,0), angle=pi/2)
 }
 
 
@@ -163,6 +196,7 @@ get_S(dataSet)
 get_LambdasAndEigenVectors(dataSet)
 get_SumLambdasValues(dataSet)
 get_InertiaAxes(dataSet)
-get_MainComponents(dataSet)
+get_F(dataSet)
 set_graph(dataSet)
-
+get_G(dataSet)
+set_CorCircle(dataSet)
