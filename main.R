@@ -127,12 +127,14 @@ get_InertiaAxes <- function(X){
   lambdaSum <- get_SumLambdasValues(X)
   lambdaPercentage <- lambdas/lambdaSum
   totalInertia <- 0
-  i <- 0
+  i <- 1
   
   while (totalInertia <= 0.75) {
-    totalInertia = totalInertia + lambdaPercentage[i+1]
+    totalInertia = totalInertia + lambdaPercentage[i]
     i = i+1
   }
+  
+  barplot(lambdaPercentage*100, ylim=c(0,100))
   
   return(list("dims" = i, "totalInertia" = totalInertia*100))
 }
