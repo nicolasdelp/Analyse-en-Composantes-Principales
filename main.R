@@ -31,32 +31,41 @@ France <- subset(EauxFM, Pays == "France")
 # Jeu de données supplementaire (Eaux du Maroc)
 Maroc <- subset(EauxFM, Pays == "Maroc")
 
-# Lignes ayant des donnees manquantes (NA) en France
+# Lignes ayant des donnees manquantes (NA)
 FranceLinesWithNA <- which(is.na(France),arr.ind=TRUE)[,1]
 FranceNA <- France[FranceLinesWithNA,]
+MarocLinesWithNA <- which(is.na(Maroc),arr.ind=TRUE)[,1]
+MarocNA <- Maroc[MarocLinesWithNA,]
 
 # On affiche le nombre d'individus ayant des donnees manquantes par variable
 missingDataPerVariable(FranceNA)
+missingDataPerVariable(MarocNA)
 
 # Il faut retirer les variables NO3 et PH car il y a 30 individus ayant un NA dans ces variables en France
 
-# Jeu de données principal sans le NO3, le PH et le Pays
+# Jeu de données sans le NO3, le PH et le Pays
 FranceWithoutNO3PH <- select(France,-c(NO3,PH,Pays))
+MarocWithoutNO3PH <- select(Maroc,-c(NO3,PH,Pays))
 
 # On affiche le nombre d'individus ayant des données manquantes par variable
 missingDataPerVariable(FranceWithoutNO3PH)
+missingDataPerVariable(MarocWithoutNO3PH)
 
 # On a diminue considerablement le nombre d'individus ayant des donnees manquantes
 
 # On retire les derniers individus ayant des donnees manquantes
 FranceLinesWithNA <- which(is.na(FranceWithoutNO3PH),arr.ind=TRUE)[,1]
 myDataset.CleanFrance <- FranceWithoutNO3PH[-FranceLinesWithNA,]
+MarocLinesWithNA <- which(is.na(MarocWithoutNO3PH),arr.ind=TRUE)[,1]
+myDataset.CleanMaroc <- MarocWithoutNO3PH[-MarocLinesWithNA,]
 
 # On change la variable qualitative en variable quantitative (la Nature)
 myDataset.CleanFrance$Nature <- as.numeric(factor(myDataset.CleanFrance$Nature))
+myDataset.CleanMaroc$Nature <- as.numeric(factor(myDataset.CleanMaroc$Nature))
 
 # On verifie qu'il n'y a plus d'individus ayant des donnees manquantes
 missingDataPerVariable(myDataset.CleanFrance)
+missingDataPerVariable(myDataset.CleanMaroc)
 
 
 #######################################
@@ -85,13 +94,13 @@ get_XCR <- function(X){
 # Retourne la matrice diagonale D
 get_D <- function(X){
   n <- nrow(X)
-  return(diag(n)/(n-1))
+  return(1/(n-1))
 }
 
 # Retourne la matrice de variances-covariances S
 get_S <- function(X){
   XCR <- get_XCR(X)
-  return(t(XCR) %*% get_D(X) %*% XCR)
+  return(get_D(X) * (t(XCR) %*% XCR))
 }
 
 # Retourne les valeurs propres
@@ -150,9 +159,16 @@ set_graph <- function(X){
     x <- append(x, myData[[1]][i,])
     y <- append(y, myData[[2]][i,])
   }
-  print(x)
-  print(y)
-  plot(x,y, xlab = "F1", ylab = "F2", xlim = c(-10, 10), ylim = c(-6, 6))
+  
+  # Avec labels
+  df <- data.frame(x, y, z=myDataset.CleanFrance[,1])
+  plot(df$x, df$y, xlab = "F1", ylab = "F2", xlim = c(-10, 10), ylim = c(-6, 6), col = "red", pch = 20)
+  text(df$x, df$y-1, labels=df$z)
+  draw.radial.line(-10, 10, center=c(0,0))
+  draw.radial.line(-6, 6, center=c(0,0), angle=pi/2)
+  
+  # Sans labels
+  plot(x,y, xlab = "F1", ylab = "F2", xlim = c(-10, 10), ylim = c(-6, 6), col = "red", pch = 20)
   draw.radial.line(-10, 10, center=c(0,0))
   draw.radial.line(-6, 6, center=c(0,0), angle=pi/2)
 }
@@ -179,9 +195,17 @@ set_CorCircle <- function(X){
     x <- append(x, myData[[1]][i])
     y <- append(y, myData[[2]][i])
   }
-  print(x)
-  print(y)
-  plot(x, y, xlim = c(-2, 2), ylim = c(-2, 2))
+  
+  # Avec labels
+  df <- data.frame(x, y, z=names(myDataset.CleanFrance[,2:ncol(myDataset.CleanFrance)]))
+  plot(df$x, df$y, xlim = c(-2, 2), ylim = c(-2, 2), col = "blue", pch = 20)
+  text(df$x, df$y-1, labels=df$z)
+  draw.circle(0,0,1)
+  draw.radial.line(-1, 1, center=c(0,0))
+  draw.radial.line(-1, 1, center=c(0,0), angle=pi/2)
+  
+  # Sans labels
+  plot(x, y, xlim = c(-2, 2), ylim = c(-2, 2), col = "blue", pch = 20)
   draw.circle(0,0,1)
   draw.radial.line(-1, 1, center=c(0,0))
   draw.radial.line(-1, 1, center=c(0,0), angle=pi/2)
