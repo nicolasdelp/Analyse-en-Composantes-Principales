@@ -136,7 +136,7 @@ get_InertiaAxes <- function(X){
   
   barplot(lambdaPercentage*100, ylim=c(0,100))
   
-  return(list("dims" = i, "totalInertia" = totalInertia*100))
+  return(list("dims" = i-1, "totalInertia" = totalInertia*100))
 }
 
 # Calcul des composantes principales
@@ -200,17 +200,17 @@ set_CorCircle <- function(X){
   
   # Avec labels
   df <- data.frame(x, y, z=names(myDataset.CleanFrance[,2:ncol(myDataset.CleanFrance)]))
-  plot(df$x, df$y, xlim = c(-2, 2), ylim = c(-2, 2), col = "blue", pch = 20)
+  plot(df$x, df$y, xlim = c(-2, 2), ylim = c(-2, 2), col = "blue", pch = 20, asp = 1)
   text(df$x, df$y-1, labels=df$z)
   draw.circle(0,0,1)
-  draw.radial.line(-1, 1, center=c(0,0))
-  draw.radial.line(-1, 1, center=c(0,0), angle=pi/2)
+  draw.radial.line(-1.05, 1.05, center=c(0,0))
+  draw.radial.line(-1.05, 1.05, center=c(0,0), angle=pi/2)
   
   # Sans labels
-  plot(x, y, xlim = c(-2, 2), ylim = c(-2, 2), col = "blue", pch = 20)
+  plot(x, y, xlim = c(-2, 2), ylim = c(-2, 2), col = "blue", pch = 20, asp = 1)
   draw.circle(0,0,1)
-  draw.radial.line(-1, 1, center=c(0,0))
-  draw.radial.line(-1, 1, center=c(0,0), angle=pi/2)
+  draw.radial.line(-1.05, 1.05, center=c(0,0))
+  draw.radial.line(-1.05, 1.05, center=c(0,0), angle=pi/2)
 }
 
 
