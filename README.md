@@ -1,4 +1,4 @@
-# Projet d'Analyse des données 
+# M1 ORO - Projet d'Analyse des données : Analyse en Composantes Principales (ACP)
 
 Analyse des données (X1MS010) - Prof. L. Bellanger
 
